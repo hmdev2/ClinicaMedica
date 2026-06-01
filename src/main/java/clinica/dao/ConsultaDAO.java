@@ -11,7 +11,7 @@ import java.util.Map;
 
 import clinica.connection.DatabaseConnection;
 
-public class Consulta extends BaseDAO {
+public class ConsultaDAO extends BaseDAO {
 
 	public void save(Integer idAgendamento, String sintomas, String anamnese, Timestamp dataHora) throws SQLException{
 		String sql = "INSERT INTO consulta (id_agendamento, sintomas, anamnese, datahora_registro) VALUES (?, ?, ?, ?);";
