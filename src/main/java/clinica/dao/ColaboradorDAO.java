@@ -29,7 +29,7 @@ public class ColaboradorDAO extends BaseDAO {
 	}
 	
 	public List<Map<String, Object>> findAll() throws SQLException{
-		String sql = "SELECT id, nome, sobrenome, cpf FROM colaborador ORDER BY nome, sobrenome";
+		String sql = "SELECT id, nome || ' ' || sobrenome AS nome_completo, cpf FROM colaborador;";
 		List<Map<String, Object>> colaboradores = new ArrayList<Map<String, Object>>();
 		try (
 				Connection con = DatabaseConnection.connect();
