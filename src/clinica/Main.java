@@ -15,7 +15,7 @@ public class Main {
 	
 	public static void testeConexaoDB() {
 		try {
-            Connection conn = DatabaseConnection.connect();
+            Connection conn = DatabaseConnection.connect(); 
             System.out.println("Conectado");
             conn.close();
         } catch (Exception e) {
