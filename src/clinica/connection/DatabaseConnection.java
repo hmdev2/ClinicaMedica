@@ -6,11 +6,11 @@ import java.sql.SQLException;
 
 public class DatabaseConnection {
 	
-	private static final String HOST = "localhost";
-    private static final String PORTA = "5432";
-    private static final String BANCO = "clinica";
-    private static final String USUARIO = "postgres";
-    private static final String SENHA = "postgres";
+	private static final String HOST = Config.get("db.host");
+    private static final String PORTA = Config.get("db.port");
+    private static final String BANCO = Config.get("db.name");
+    private static final String USUARIO = Config.get("db.user");
+    private static final String SENHA = Config.get("db.pass");
     
     private DatabaseConnection() {
     	
