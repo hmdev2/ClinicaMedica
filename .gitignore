@@ -5,6 +5,7 @@
 
 bin/
 out/
+target/
 *.class
 
 lib/*.jar
@@ -15,3 +16,5 @@ Thumbs.db
 .idea/
 *.iml
 .vscode/
+
+config.properties
