@@ -2,6 +2,9 @@ package clinica.dto;
 
 public class EnderecoDTO {
     private String endereco;
+    
+    public EnderecoDTO() {
+    }
 
     public EnderecoDTO(String endereco) {
         this.endereco = endereco;
