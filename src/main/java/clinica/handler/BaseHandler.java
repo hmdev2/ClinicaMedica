@@ -70,7 +70,7 @@ public abstract class BaseHandler implements HttpHandler {
 		sendJson(exchange, status, error);
 	}
 	
-	protected void demandMethod(HttpExchange exchange, String method) {
+	protected void requireMethod(HttpExchange exchange, String method) {
 		if(!method.equalsIgnoreCase(exchange.getRequestMethod())) {
 			throw new IllegalArgumentException("Metodo HTTP nao permitido. Use " + method);
 		}
