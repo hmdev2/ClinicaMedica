@@ -10,7 +10,7 @@ import clinica.dao.PacienteDAO;
 public class Main {
 
 	public static void main(String[] args) {
-		testePacienteDAOFindAll();
+		testePacienteDAOSave();
 	}
 	
 	public static void testeConexaoDB() {
@@ -34,6 +34,25 @@ public class Main {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public static void testePacienteDAOSave() {
+		PacienteDAO dao = new PacienteDAO();
+
+        try {
+            dao.save(
+                "João",
+                "Silva",
+                java.sql.Date.valueOf("2000-01-01"),
+                "Masculino",
+                "joao@email.com",
+                "12345678900"
+            );
+
+            System.out.println("Paciente salvo");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 	}
 
 }
