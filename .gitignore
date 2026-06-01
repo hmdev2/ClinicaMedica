@@ -5,6 +5,7 @@
 
 bin/
 out/
+target/
 *.class
 
 lib/*.jar

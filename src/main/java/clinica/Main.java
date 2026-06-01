@@ -6,11 +6,12 @@ import java.util.Map;
 
 import clinica.connection.DatabaseConnection;
 import clinica.dao.PacienteDAO;
+import clinica.dto.EnderecoDTO;
 
 public class Main {
 
 	public static void main(String[] args) {
-		testePacienteDAOSave();
+		testePacienteDAOFindEnderecoByPacienteId();
 	}
 	
 	public static void testeConexaoDB() {
@@ -50,6 +51,22 @@ public class Main {
             );
 
             System.out.println("Paciente salvo");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+	}
+	
+	public static void testePacienteDAOFindEnderecoByPacienteId() {
+		PacienteDAO dao = new PacienteDAO();
+
+        try {
+            int pacienteId = 1;
+
+            EnderecoDTO endereco = dao.findEnderecoByPacienteId(pacienteId);
+
+            System.out.println("Endereço do paciente:");
+            System.out.println(endereco);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
