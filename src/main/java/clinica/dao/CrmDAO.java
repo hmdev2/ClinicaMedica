@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 import clinica.connection.DatabaseConnection;
 
-public class crmDAO {
+public class CrmDAO {
 	public void save(Integer idMedico, Integer numero, String uf, Integer rqe) {
 		String sql = "INSERT INTO crm (id_medico, numero, uf, rqe) VALUES" + "(?, ?, ?, ?)";
 
