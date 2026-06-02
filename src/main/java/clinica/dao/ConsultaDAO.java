@@ -23,7 +23,7 @@ public class ConsultaDAO extends BaseDAO {
 			ps.setTimestamp(4, dataHora);
 			ps.executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			e.printStackTrace(); 
 		}
 	}
 

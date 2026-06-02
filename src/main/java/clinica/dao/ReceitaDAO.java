@@ -22,7 +22,7 @@ public class ReceitaDAO extends BaseDAO{
 			ps.setString(3, instrucoes);
 			ps.executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			e.printStackTrace(); 
 		}
 	}
 	

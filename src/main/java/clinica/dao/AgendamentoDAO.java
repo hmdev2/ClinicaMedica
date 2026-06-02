@@ -20,12 +20,12 @@ public class AgendamentoDAO extends BaseDAO{
 			ps.setInt(1, idPaciente);
 			ps.setInt(2, idMedico);
 			ps.setInt(3, idColaborador);
-			ps.setTimestamp(4, dataHora);
+			ps.setTimestamp(4, dataHora); 
 			ps.setString(5, status);
 			ps.executeUpdate();
 
 		} catch (SQLException e) {
-			e.printStackTrace();
+			e.printStackTrace(); 
 		}
 	}
 	public List<Map<String, Object>> findAll(){
