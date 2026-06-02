@@ -39,8 +39,8 @@ public abstract class BaseHandler implements HttpHandler {
 	
 	private void addCors(HttpExchange exchange) {
 		exchange.getResponseHeaders().set("Access-Control-Allow-Origin", "*");
-		exchange.getRequestHeaders().set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-		exchange.getRequestHeaders().set("Access-Control-Allow-Headers", "Content-Type");
+		exchange.getResponseHeaders().set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+		exchange.getResponseHeaders().set("Access-Control-Allow-Headers", "Content-Type");
 	}
 	
 	private void send(HttpExchange exchange, int status, String response) throws IOException {
