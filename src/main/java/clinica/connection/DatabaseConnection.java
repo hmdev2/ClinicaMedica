@@ -22,7 +22,7 @@ public class DatabaseConnection {
     		Class.forName("org.postgresql.Driver");
     		return DriverManager.getConnection(url, USUARIO, SENHA);
     	} catch(ClassNotFoundException e) {
-    		throw new SQLException("Driver JDBC do PostgreSQL nao encontrado", e);
+    		throw new SQLException("Driver JDBC do PostgreSQL nao encontrado", e); 
     	}
     }
 }

@@ -17,5 +17,5 @@ public class EnderecoDTO {
     @Override
     public String toString() {
         return endereco;
-    }
+    } 
 }

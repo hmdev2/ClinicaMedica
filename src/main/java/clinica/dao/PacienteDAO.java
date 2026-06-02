@@ -27,7 +27,7 @@ public class PacienteDAO extends BaseDAO {
 			}
 		}
 		
-		return pacientes;
+		return pacientes; 
 	}
 	
 	public EnderecoDTO findEnderecoByPacienteId(int pacienteId) throws SQLException {

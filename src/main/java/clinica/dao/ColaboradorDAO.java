@@ -24,7 +24,7 @@ public class ColaboradorDAO extends BaseDAO {
             ps.setString(3, cpf);
             ps.executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			e.printStackTrace(); 
 		}
 	}
 	

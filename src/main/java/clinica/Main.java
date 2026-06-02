@@ -24,7 +24,7 @@ public class Main {
 		server.setExecutor(Executors.newFixedThreadPool(10));
 		server.start();
 		
-		System.out.println("Servidor iniciado em http://localhost:8080");
+		System.out.println("Servidor iniciado em http://localhost:8080"); 
 	}
 	
 }

@@ -16,6 +16,6 @@ public class BaseDAO {
             line.put(meta.getColumnLabel(i), rs.getObject(i));
         }
 		
-		return line;
+		return line; 
 	}
 }

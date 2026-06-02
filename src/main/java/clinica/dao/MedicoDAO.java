@@ -21,7 +21,7 @@ public class MedicoDAO extends BaseDAO {
 			ps.setString(4, cpf);
 			ps.executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			e.printStackTrace(); 
 		}
 	}
 

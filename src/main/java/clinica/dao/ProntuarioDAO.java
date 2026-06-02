@@ -23,7 +23,7 @@ public class ProntuarioDAO extends BaseDAO{
 			ps.setTimestamp(4, dataHora);
 			ps.executeUpdate();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			e.printStackTrace(); 
 		}
 	}
 	public List<Map<String, Object>> prontuarioByIdPaciente(Integer idPaciente){
