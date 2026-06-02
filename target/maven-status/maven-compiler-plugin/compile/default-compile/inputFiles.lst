@@ -1,0 +1,15 @@
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\connection\Config.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\connection\DatabaseConnection.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\dao\AgendamentoDAO.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\dao\BaseDAO.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\dao\ColaboradorDAO.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\dao\ConsultaDAO.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\dao\CrmDAO.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\dao\MedicoDAO.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\dao\PacienteDAO.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\dao\ProntuarioDAO.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\dao\ReceitaDAO.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\dto\EnderecoDTO.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\handler\BaseHandler.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\handler\PacienteHandler.java
+E:\dev\java\clinica_medica\ClinicaMedica\src\main\java\clinica\Main.java
