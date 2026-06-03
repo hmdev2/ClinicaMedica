@@ -5,7 +5,8 @@ const state = {
   agendamentos: [],
   consultas: [],
   exames: [],
-  receitas: []
+  receitas: [],
+  prontuario: []
 };
 
 const lists = {
@@ -30,6 +31,10 @@ document.querySelectorAll("[data-load]").forEach((button) => {
 
 document.querySelectorAll("form[data-form]").forEach((form) => {
   form.addEventListener("submit", handleForm);
+});
+
+document.querySelectorAll("[data-fill-current-month]").forEach((button) => {
+  button.addEventListener("click", fillCurrentMonth);
 });
 
 document.querySelector("#refreshDashboard").addEventListener("click", loadDashboard);
@@ -80,6 +85,7 @@ function clean(object) {
 
 async function handleForm(event) {
   event.preventDefault();
+
   const form = event.currentTarget;
   const action = event.submitter?.dataset.action || "post";
 
@@ -102,11 +108,13 @@ async function handleForm(event) {
         notify("Agendamento criado com sucesso");
         form.reset();
         await loadResource("agendamentos");
+        await loadDashboard();
         break;
       case "agendamentoStatus":
         await submitAgendamentoStatus(formData(form));
         form.reset();
         await loadResource("agendamentos");
+        await loadDashboard();
         break;
       case "consulta":
         await submitCrud("consultas", action, buildConsulta(formData(form)));
@@ -127,8 +135,11 @@ async function handleForm(event) {
       case "historicoPaciente":
         await loadHistorico(formData(form));
         break;
+      case "receitaConsulta":
+        await loadReceitaConsulta(formData(form));
+        break;
       default:
-        throw new Error("Formulario nao reconhecido");
+        throw new Error("Formulário não reconhecido");
     }
   } catch (error) {
     notify(error.message, true);
@@ -163,9 +174,7 @@ async function submitCrud(resource, action, payload) {
 }
 
 function requireId(id) {
-  if (!id) {
-    throw new Error("Informe o ID para atualizar ou remover");
-  }
+  if (!id) throw new Error("Informe o ID para atualizar ou remover");
 }
 
 function buildPaciente(data) {
@@ -289,7 +298,7 @@ async function submitProntuario(data) {
       dataHoraRegistro: asDateTime(data.dataHoraRegistro)
     })
   });
-  notify("Registro salvo no prontuario");
+  notify("Registro salvo no prontuário");
 }
 
 async function submitExame(form, action) {
@@ -326,8 +335,10 @@ async function loadDashboard() {
 
   document.querySelector("#countPacientes").textContent = state.pacientes.length;
   document.querySelector("#countMedicos").textContent = state.medicos.length;
+  document.querySelector("#countColaboradores").textContent = state.colaboradores.length;
   document.querySelector("#countAgendamentos").textContent = state.agendamentos.length;
   document.querySelector("#countConsultas").textContent = state.consultas.length;
+  document.querySelector("#countReceitas").textContent = state.receitas.length;
 }
 
 async function loadResource(resource) {
@@ -345,7 +356,7 @@ function renderResource(resource) {
     medicos: ["id", "nome", "sobrenome", "especialidade", "cpf", "crms"],
     colaboradores: ["id", "nome", "sobrenome", "cpf"],
     agendamentos: ["id", "paciente", "medico", "colaborador", "dataHora", "status"],
-    consultas: ["id", "idAgendamento", "paciente", "medico", "sintomas", "dataHoraRegistro"],
+    consultas: ["id", "idAgendamento", "paciente", "medico", "sintomas", "anamnese", "dataHoraRegistro"],
     exames: ["id", "idConsulta", "tipoExame", "resultado", "dataSolicitacao", "dataResultado"],
     receitas: ["id", "idConsulta", "dataHoraEmissao", "instrucoes", "itens"]
   }[resource];
@@ -357,27 +368,30 @@ async function loadConsultasMes(data) {
   const result = await api(`/api/consultas?mes=${data.mes}&ano=${data.ano}`);
   document.querySelector("#resultadoRelatorio").innerHTML = table(result, [
     "id",
+    "idAgendamento",
     "paciente",
     "medico",
     "sintomas",
     "anamnese",
     "dataHoraRegistro"
   ]);
-  notify("Relatorio gerado");
+  notify("Relatório gerado");
 }
 
 async function loadHistorico(data) {
   const result = await api(`/api/prontuarios/paciente/${data.idPaciente}`);
-  document.querySelector("#resultadoRelatorio").innerHTML = table(result, [
-    "id",
-    "paciente",
-    "medico",
-    "especialidadeMedico",
-    "diagnostico",
-    "tratamento",
-    "dataHoraConsulta"
-  ]);
-  notify("Historico carregado");
+  state.prontuario = result;
+
+  const target = document.querySelector("#resultadoProntuario");
+  if (target) target.innerHTML = prontuarioCards(result);
+
+  notify("Histórico carregado");
+}
+
+async function loadReceitaConsulta(data) {
+  const result = await api(`/api/consultas/${data.idConsulta}/receita`);
+  document.querySelector("#resultadoReceitaConsulta").innerHTML = receitaCard(result);
+  notify("Receita carregada");
 }
 
 function table(data, columns) {
@@ -394,13 +408,67 @@ function table(data, columns) {
   return `<table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>`;
 }
 
+function prontuarioCards(data) {
+  if (!data || data.length === 0) {
+    return '<p class="empty">Nenhum registro de prontuário encontrado.</p>';
+  }
+
+  return data.map((item) => `
+    <article class="record-card">
+      <div class="record-head">
+        <div>
+          <strong>${escapeHtml(item.paciente || "Paciente")}</strong>
+          <span>${escapeHtml(item.cpfPaciente || "CPF não informado")}</span>
+        </div>
+        <span class="badge ok">${escapeHtml(item.dataHoraConsulta || item.dataHoraRegistro || "-")}</span>
+      </div>
+      <dl class="record-grid">
+        <div><dt>Médico</dt><dd>${escapeHtml(item.medico || "-")}</dd></div>
+        <div><dt>Especialidade</dt><dd>${escapeHtml(item.especialidadeMedico || "-")}</dd></div>
+        <div><dt>Sintomas</dt><dd>${escapeHtml(item.sintomas || "-")}</dd></div>
+        <div><dt>Anamnese</dt><dd>${escapeHtml(item.anamnese || "-")}</dd></div>
+        <div><dt>Diagnóstico</dt><dd>${escapeHtml(item.diagnostico || "-")}</dd></div>
+        <div><dt>Tratamento</dt><dd>${escapeHtml(item.tratamento || "-")}</dd></div>
+      </dl>
+    </article>
+  `).join("");
+}
+
+function receitaCard(receita) {
+  if (!receita) {
+    return '<p class="empty">Receita não encontrada para esta consulta.</p>';
+  }
+
+  const itens = receita.itens && receita.itens.length
+    ? receita.itens.map((item) => `
+      <li>
+        <strong>${escapeHtml(item.nome || "-")}</strong>
+        <span>${escapeHtml(item.principioAtivo || "-")} | ${escapeHtml(item.dosagem || "-")} | ${escapeHtml(item.frequencia || "-")} | ${escapeHtml(String(item.duracaoDias || "-"))} dias</span>
+      </li>
+    `).join("")
+    : "<li><span>Nenhum medicamento informado.</span></li>";
+
+  return `
+    <article class="prescription">
+      <div class="record-head">
+        <div>
+          <strong>Receita da consulta #${escapeHtml(String(receita.idConsulta || "-"))}</strong>
+          <span>Emitida em ${escapeHtml(receita.dataHoraEmissao || "-")}</span>
+        </div>
+        <span class="badge ok">Prescrição médica</span>
+      </div>
+      <ul>${itens}</ul>
+      <p>${escapeHtml(receita.instrucoes || "Sem instruções adicionais.")}</p>
+    </article>
+  `;
+}
+
 function label(value) {
   return value
     .replace(/([A-Z])/g, " $1")
     .replace(/^id$/, "ID")
     .replace(/^id /, "ID ")
     .replace("data Hora", "Data hora")
-    .replace("datahora", "Data hora")
     .replace("cpf", "CPF")
     .replace("crms", "CRMs")
     .replace("itens", "Medicamentos");
@@ -423,15 +491,19 @@ function formatValue(column, value) {
     }).join("<br>");
   }
 
-  if (typeof value === "object") {
-    return escapeHtml(JSON.stringify(value));
-  }
-
+  if (typeof value === "object") return escapeHtml(JSON.stringify(value));
   return escapeHtml(String(value));
 }
 
+function fillCurrentMonth(event) {
+  const form = event.currentTarget.closest("form");
+  const now = new Date();
+  form.elements.mes.value = now.getMonth() + 1;
+  form.elements.ano.value = now.getFullYear();
+}
+
 function escapeHtml(value) {
-  return value
+  return String(value)
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;")
@@ -449,4 +521,5 @@ function notify(message, isError = false) {
   }, 4200);
 }
 
+fillCurrentMonth({ currentTarget: document.querySelector("[data-fill-current-month]") });
 loadDashboard().catch((error) => notify(error.message, true));

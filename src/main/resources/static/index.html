@@ -17,28 +17,20 @@
 
   <main>
     <section class="summary-grid" aria-label="Resumo do sistema">
-      <article>
-        <span id="countPacientes">0</span>
-        <p>Pacientes</p>
-      </article>
-      <article>
-        <span id="countMedicos">0</span>
-        <p>Profissionais</p>
-      </article>
-      <article>
-        <span id="countAgendamentos">0</span>
-        <p>Agendamentos</p>
-      </article>
-      <article>
-        <span id="countConsultas">0</span>
-        <p>Consultas</p>
-      </article>
+      <article><span id="countPacientes">0</span><p>Pacientes</p></article>
+      <article><span id="countMedicos">0</span><p>Profissionais</p></article>
+      <article><span id="countColaboradores">0</span><p>Atendentes</p></article>
+      <article><span id="countAgendamentos">0</span><p>Agendamentos</p></article>
+      <article><span id="countConsultas">0</span><p>Consultas</p></article>
+      <article><span id="countReceitas">0</span><p>Receitas</p></article>
     </section>
 
     <nav class="tabs" aria-label="Áreas do sistema">
       <button class="active" data-tab="recepcao" type="button">Recepção</button>
       <button data-tab="cadastros" type="button">Cadastros</button>
       <button data-tab="atendimento" type="button">Atendimento</button>
+      <button data-tab="prontuarios" type="button">Prontuários</button>
+      <button data-tab="receitas" type="button">Receitas</button>
       <button data-tab="relatorios" type="button">Relatórios</button>
     </nav>
 
@@ -46,7 +38,7 @@
       <div class="panel-header">
         <div>
           <h2>Recepção</h2>
-          <p>Controle de agenda, chegada do paciente e cancelamentos.</p>
+          <p>Agendamentos feitos, chegada do paciente e cancelamentos.</p>
         </div>
       </div>
 
@@ -63,7 +55,7 @@
         </form>
 
         <form class="form-card" data-form="agendamentoStatus">
-          <h3>Alterar status</h3>
+          <h3>Alterar agendamento</h3>
           <div class="fields compact">
             <label>Agendamento <input name="id" type="number" min="1" required></label>
             <label>Ação
@@ -79,8 +71,8 @@
       </div>
 
       <div class="list-header">
-        <h3>Agendamentos</h3>
-        <button data-load="agendamentos" type="button">Recarregar lista</button>
+        <h3>Agendamentos feitos</h3>
+        <button data-load="agendamentos" type="button">Recarregar</button>
       </div>
       <div id="listaAgendamentos" class="table-wrap"></div>
     </section>
@@ -89,7 +81,7 @@
       <div class="panel-header">
         <div>
           <h2>Cadastros</h2>
-          <p>Pacientes, profissionais de saúde e colaboradores da clínica.</p>
+          <p>Pacientes, colaboradores atendentes e profissionais de saúde.</p>
         </div>
       </div>
 
@@ -127,7 +119,7 @@
         </form>
 
         <form class="form-card" data-form="medico">
-          <h3>Profissional</h3>
+          <h3>Profissional de saúde</h3>
           <div class="fields">
             <label>ID para atualizar/remover <input name="id" type="number" min="1"></label>
             <label>Nome <input name="nome" required></label>
@@ -162,18 +154,9 @@
       </div>
 
       <div class="list-grid">
-        <section>
-          <div class="list-header"><h3>Pacientes</h3><button data-load="pacientes" type="button">Recarregar</button></div>
-          <div id="listaPacientes" class="table-wrap"></div>
-        </section>
-        <section>
-          <div class="list-header"><h3>Profissionais</h3><button data-load="medicos" type="button">Recarregar</button></div>
-          <div id="listaMedicos" class="table-wrap"></div>
-        </section>
-        <section>
-          <div class="list-header"><h3>Atendentes</h3><button data-load="colaboradores" type="button">Recarregar</button></div>
-          <div id="listaColaboradores" class="table-wrap"></div>
-        </section>
+        <section><div class="list-header"><h3>Pacientes cadastrados</h3><button data-load="pacientes" type="button">Recarregar</button></div><div id="listaPacientes" class="table-wrap"></div></section>
+        <section><div class="list-header"><h3>Profissionais de saúde</h3><button data-load="medicos" type="button">Recarregar</button></div><div id="listaMedicos" class="table-wrap"></div></section>
+        <section><div class="list-header"><h3>Colaboradores atendentes</h3><button data-load="colaboradores" type="button">Recarregar</button></div><div id="listaColaboradores" class="table-wrap"></div></section>
       </div>
     </section>
 
@@ -181,13 +164,13 @@
       <div class="panel-header">
         <div>
           <h2>Atendimento médico</h2>
-          <p>Registro de consulta, diagnóstico, exames e receita.</p>
+          <p>Consulta, sintomas, anamnese, exames e resultado do atendimento.</p>
         </div>
       </div>
 
       <div class="layout two">
         <form class="form-card" data-form="consulta">
-          <h3>Consulta</h3>
+          <h3>Registrar consulta</h3>
           <div class="fields">
             <label>ID para atualizar/remover <input name="id" type="number" min="1"></label>
             <label>Agendamento <input name="idAgendamento" type="number" min="1" required></label>
@@ -202,21 +185,8 @@
           </div>
         </form>
 
-        <form class="form-card" data-form="prontuario">
-          <h3>Prontuário da consulta</h3>
-          <div class="fields">
-            <label>Consulta <input name="idConsulta" type="number" min="1" required></label>
-            <label>Data do registro <input name="dataHoraRegistro" type="datetime-local" required></label>
-            <label class="wide">Diagnóstico <textarea name="diagnostico" rows="3" required></textarea></label>
-            <label class="wide">Tratamento <textarea name="tratamento" rows="4" required></textarea></label>
-          </div>
-          <button type="submit">Salvar no prontuário</button>
-        </form>
-      </div>
-
-      <div class="layout two">
         <form class="form-card" data-form="exame">
-          <h3>Exame</h3>
+          <h3>Exames</h3>
           <div class="fields">
             <label>ID para atualizar/remover <input name="id" type="number" min="1"></label>
             <label>Consulta <input name="idConsulta" type="number" min="1" required></label>
@@ -232,9 +202,57 @@
             <button data-action="delete" class="danger" type="submit" formnovalidate>Remover</button>
           </div>
         </form>
+      </div>
 
+      <div class="list-grid">
+        <section><div class="list-header"><h3>Consultas registradas</h3><button data-load="consultas" type="button">Recarregar</button></div><div id="listaConsultas" class="table-wrap"></div></section>
+        <section><div class="list-header"><h3>Resultados de exames</h3><button data-load="exames" type="button">Recarregar</button></div><div id="listaExames" class="table-wrap"></div></section>
+      </div>
+    </section>
+
+    <section id="prontuarios" class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Prontuário do paciente</h2>
+          <p>Histórico de consultas anteriores, diagnóstico e tratamento.</p>
+        </div>
+      </div>
+
+      <div class="layout two">
+        <form class="form-card" data-form="historicoPaciente">
+          <h3>Buscar prontuário</h3>
+          <div class="fields compact">
+            <label>Paciente <input name="idPaciente" type="number" min="1" required></label>
+          </div>
+          <button type="submit">Consultar histórico</button>
+        </form>
+
+        <form class="form-card" data-form="prontuario">
+          <h3>Novo registro clínico</h3>
+          <div class="fields">
+            <label>Consulta <input name="idConsulta" type="number" min="1" required></label>
+            <label>Data do registro <input name="dataHoraRegistro" type="datetime-local" required></label>
+            <label class="wide">Diagnóstico <textarea name="diagnostico" rows="3" required></textarea></label>
+            <label class="wide">Tratamento <textarea name="tratamento" rows="4" required></textarea></label>
+          </div>
+          <button type="submit">Salvar no prontuário</button>
+        </form>
+      </div>
+
+      <div id="resultadoProntuario" class="record-list"></div>
+    </section>
+
+    <section id="receitas" class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Receitas médicas</h2>
+          <p>Prescrição de medicamentos emitida pelo médico após consulta.</p>
+        </div>
+      </div>
+
+      <div class="layout two">
         <form class="form-card" data-form="receita">
-          <h3>Receita</h3>
+          <h3>Emitir receita</h3>
           <div class="fields">
             <label>ID para atualizar/remover <input name="id" type="number" min="1"></label>
             <label>Consulta <input name="idConsulta" type="number" min="1" required></label>
@@ -252,21 +270,19 @@
             <button data-action="delete" class="danger" type="submit" formnovalidate>Remover</button>
           </div>
         </form>
+
+        <form class="form-card" data-form="receitaConsulta">
+          <h3>Visualizar receita por consulta</h3>
+          <div class="fields compact">
+            <label>Consulta <input name="idConsulta" type="number" min="1" required></label>
+          </div>
+          <button type="submit">Visualizar receita</button>
+        </form>
       </div>
 
       <div class="list-grid">
-        <section>
-          <div class="list-header"><h3>Consultas</h3><button data-load="consultas" type="button">Recarregar</button></div>
-          <div id="listaConsultas" class="table-wrap"></div>
-        </section>
-        <section>
-          <div class="list-header"><h3>Exames</h3><button data-load="exames" type="button">Recarregar</button></div>
-          <div id="listaExames" class="table-wrap"></div>
-        </section>
-        <section>
-          <div class="list-header"><h3>Receitas</h3><button data-load="receitas" type="button">Recarregar</button></div>
-          <div id="listaReceitas" class="table-wrap"></div>
-        </section>
+        <section><div class="list-header"><h3>Receitas emitidas</h3><button data-load="receitas" type="button">Recarregar</button></div><div id="listaReceitas" class="table-wrap"></div></section>
+        <section><div class="list-header"><h3>Receita selecionada</h3></div><div id="resultadoReceitaConsulta" class="record-list"></div></section>
       </div>
     </section>
 
@@ -274,7 +290,7 @@
       <div class="panel-header">
         <div>
           <h2>Relatórios</h2>
-          <p>Consultas do mês, prontuário do paciente e apresentação dos resultados exigidos.</p>
+          <p>Lista de todas as consultas feitas no mês e histórico por paciente.</p>
         </div>
       </div>
 
@@ -282,18 +298,13 @@
         <form class="form-card" data-form="relatorioMes">
           <h3>Consultas por mês</h3>
           <div class="fields compact">
-            <label>Mês <input name="mes" type="number" min="1" max="12" value="5" required></label>
-            <label>Ano <input name="ano" type="number" min="2000" value="2026" required></label>
+            <label>Mês <input name="mes" type="number" min="1" max="12" required></label>
+            <label>Ano <input name="ano" type="number" min="2000" required></label>
           </div>
-          <button type="submit">Gerar relatório</button>
-        </form>
-
-        <form class="form-card" data-form="historicoPaciente">
-          <h3>Prontuário do paciente</h3>
-          <div class="fields compact">
-            <label>Paciente <input name="idPaciente" type="number" min="1" value="1" required></label>
+          <div class="button-row">
+            <button type="submit">Gerar relatório</button>
+            <button data-fill-current-month type="button">Mês atual</button>
           </div>
-          <button type="submit">Consultar histórico</button>
         </form>
       </div>
 
