@@ -212,19 +212,65 @@ public class MedicoDAO extends BaseDAO {
     }
 
     public void delete(Long id) throws SQLException {
-        String sqlCrm = "DELETE FROM crm WHERE id_medico = ?";
-        String sqlMedico = "DELETE FROM medico WHERE id = ?";
+
+        String sqlFindConsultas      = "SELECT c.id FROM consulta c JOIN agendamento a ON c.id_agendamento = a.id WHERE a.id_medico = ?";
+
+        String sqlItemReceita        = "DELETE FROM item_receita WHERE id_receita IN (SELECT id FROM receita WHERE id_consulta = ?)";
+        String sqlReceita            = "DELETE FROM receita WHERE id_consulta = ?";
+        String sqlExame              = "DELETE FROM exame WHERE id_consulta = ?";
+        String sqlRegistroProntuario = "DELETE FROM registro_prontuario WHERE id_consulta = ?";
+
+        String sqlConsulta           = "DELETE FROM consulta WHERE id_agendamento IN (SELECT id FROM agendamento WHERE id_medico = ?)";
+        String sqlAgendamento        = "DELETE FROM agendamento WHERE id_medico = ?";
+        String sqlCrm                = "DELETE FROM crm WHERE id_medico = ?";
+        String sqlMedico             = "DELETE FROM medico WHERE id = ?";
 
         Connection con = DatabaseConnection.connect();
 
         try {
             con.setAutoCommit(false);
 
+            List<Long> consultaIds = new ArrayList<>();
+            try (PreparedStatement ps = con.prepareStatement(sqlFindConsultas)) {
+                ps.setLong(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        consultaIds.add(rs.getLong("id"));
+                    }
+                }
+            }
+
+            for (Long consultaId : consultaIds) {
+                try (PreparedStatement ps = con.prepareStatement(sqlItemReceita)) {
+                    ps.setLong(1, consultaId);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement(sqlReceita)) {
+                    ps.setLong(1, consultaId);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement(sqlExame)) {
+                    ps.setLong(1, consultaId);
+                    ps.executeUpdate();
+                }
+                try (PreparedStatement ps = con.prepareStatement(sqlRegistroProntuario)) {
+                    ps.setLong(1, consultaId);
+                    ps.executeUpdate();
+                }
+            }
+
+            try (PreparedStatement ps = con.prepareStatement(sqlConsulta)) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
+            try (PreparedStatement ps = con.prepareStatement(sqlAgendamento)) {
+                ps.setLong(1, id);
+                ps.executeUpdate();
+            }
             try (PreparedStatement ps = con.prepareStatement(sqlCrm)) {
                 ps.setLong(1, id);
                 ps.executeUpdate();
             }
-
             try (PreparedStatement ps = con.prepareStatement(sqlMedico)) {
                 ps.setLong(1, id);
                 int rows = ps.executeUpdate();
@@ -234,6 +280,7 @@ public class MedicoDAO extends BaseDAO {
             }
 
             con.commit();
+
         } catch (Exception e) {
             con.rollback();
             throw e;
