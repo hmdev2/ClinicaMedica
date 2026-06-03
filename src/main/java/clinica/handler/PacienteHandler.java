@@ -19,8 +19,36 @@ public class PacienteHandler extends BaseHandler {
     protected void process(HttpExchange exchange) throws Exception {
 
         if ("GET".equalsIgnoreCase(exchange.getRequestMethod())) {
-            sendList(exchange, dao.findAll());
-            return;
+        	
+        	String path = exchange.getRequestURI().getPath();
+        	String[] parts = path.split("/");
+        	
+        	if(parts.length == 3) {
+        		
+        		sendList(exchange, dao.findAll());
+        		return;
+        	}
+        	
+        	if(parts.length == 4) {
+        		try {
+        			Long id = Long.parseLong(parts[3]);
+        			
+        			PacienteDTO p = dao.findById(id);
+        			
+        			if(p == null) {
+        				sendJson(exchange, 400, Map.of("error", "Paciente não encontrado"));
+        				return;
+        			}
+        			
+        			sendJson(exchange, 200, p);
+        			return;
+        			
+        		} catch(NumberFormatException e) {
+        			sendJson(exchange, 400, Map.of("error", "Id inválido"));
+        			return;
+        		}
+        	}
+        	
         }
 
         if ("POST".equalsIgnoreCase(exchange.getRequestMethod())) {

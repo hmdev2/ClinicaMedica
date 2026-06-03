@@ -11,13 +11,14 @@ import java.util.List;
 import clinica.connection.DatabaseConnection;
 import clinica.dto.EnderecoDTO;
 import clinica.dto.PacienteDTO;
+import clinica.dto.TelefoneDTO;
 
 public class PacienteDAO extends BaseDAO {
 	
 	public List<PacienteDTO> findAll() throws SQLException {
 	    String sql = "SELECT id, nome, sobrenome, nascimento, sexo, email, cpf FROM paciente ORDER BY nome, sobrenome";
 
-	    List<PacienteDTO> lista = new ArrayList<>();
+	    List<PacienteDTO> list = new ArrayList<>();
 
 	    try (
 	        Connection con = DatabaseConnection.connect();
@@ -26,7 +27,9 @@ public class PacienteDAO extends BaseDAO {
 	    ) {
 	        while (rs.next()) {
 	            PacienteDTO dto = new PacienteDTO();
-
+	            
+	            Long id = rs.getLong("id");
+	            
 	            dto.setId(rs.getLong("id"));
 	            dto.setNome(rs.getString("nome"));
 	            dto.setSobrenome(rs.getString("sobrenome"));
@@ -34,12 +37,45 @@ public class PacienteDAO extends BaseDAO {
 	            dto.setSexo(rs.getString("sexo"));
 	            dto.setEmail(rs.getString("email"));
 	            dto.setCpf(rs.getString("cpf"));
+	            
+	            dto.setEndereco(findEnderecoByPacienteId(id));
 
-	            lista.add(dto);
+	            dto.setTelefones(findTelefonesByPacienteId(id));
+
+	            list.add(dto);
 	        }
 	    }
 
-	    return lista;
+	    return list;
+	}
+	
+	public List<TelefoneDTO> findTelefonesByPacienteId(Long pacienteId) throws SQLException {
+		String sql = "SELECT ddi, ddd, prefixo, sufixo FROM telefone WHERE telefone.id_paciente = ?";
+		
+		List<TelefoneDTO> telefoneList = new ArrayList<>();
+		
+		try(
+				Connection con = DatabaseConnection.connect();
+				PreparedStatement ps = con.prepareStatement(sql);
+		) {
+			
+			ps.setLong(1, pacienteId);
+			
+			try(ResultSet rs = ps.executeQuery()) {
+				while(rs.next()) {					
+					TelefoneDTO t = new TelefoneDTO();
+					
+					t.setDdi(rs.getString("ddi"));
+					t.setDdd(rs.getString("ddd"));
+					t.setPrefixo(rs.getString("prefixo"));
+					t.setSufixo(rs.getString("sufixo"));
+					
+					telefoneList.add(t);
+				}
+			}
+		}
+		
+		return telefoneList;
 	}
 	
 	public EnderecoDTO findEnderecoByPacienteId(Long pacienteId) throws SQLException {
@@ -149,6 +185,41 @@ public class PacienteDAO extends BaseDAO {
 	    	con.close();
 	    }
 
+	}
+	
+	public PacienteDTO findById(Long pacienteId) throws SQLException{
+		String sql = "SELECT * FROM paciente WHERE id = ?";
+		
+		try (
+				Connection con = DatabaseConnection.connect();
+				PreparedStatement ps = con.prepareStatement(sql);
+		) {
+				
+			ps.setLong(1, pacienteId);
+			
+			try(ResultSet rs = ps.executeQuery()) {
+				if(rs.next()) {
+					PacienteDTO p = new PacienteDTO();
+					
+					Long id = rs.getLong("id");
+					
+					p.setId(rs.getLong("id"));
+					p.setNome(rs.getString("nome"));
+					p.setSobrenome(rs.getString("sobrenome"));
+					p.setEmail(rs.getString("email"));
+					p.setCpf(rs.getString("cpf"));
+					p.setNascimento(rs.getDate("nascimento").toString());
+					p.setSexo(rs.getString("sexo"));
+					
+					p.setEndereco(findEnderecoByPacienteId(id));
+					p.setTelefones(findTelefonesByPacienteId(id));
+					
+					return p;
+				}
+			}
+		}
+		
+		return null;
 	}
 	
 }
