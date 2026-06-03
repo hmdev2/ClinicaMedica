@@ -3,69 +3,304 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Clinica Medica</title>
+  <title>Clínica Vida Plena</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="topbar">
+  <header class="app-header">
     <div>
-      <h1>Clinica Medica</h1>
-      <p>Gestao de agendamentos, atendimentos, prontuarios, exames e receitas</p>
+      <p class="eyebrow">Sistema de clínica médica</p>
+      <h1>Clínica Vida Plena</h1>
     </div>
-    <button id="refreshAll" type="button">Atualizar visoes</button>
+    <button id="refreshDashboard" type="button">Atualizar</button>
   </header>
 
   <main>
-    <section class="band">
-      <div class="section-title">
-        <h2>Apresentacao exigida</h2>
-        <div class="filters">
-          <label>Mes <input id="mes" type="number" min="1" max="12" value="5"></label>
-          <label>Ano <input id="ano" type="number" min="2000" value="2026"></label>
-          <label>Paciente <input id="pacienteProntuario" type="number" min="1" value="1"></label>
-        </div>
-      </div>
-      <div class="views">
-        <button data-view="agendamentos">Agendamentos</button>
-        <button data-view="pacientes">Pacientes</button>
-        <button data-view="colaboradores">Colaboradores</button>
-        <button data-view="medicos">Profissionais</button>
-        <button data-view="prontuario">Prontuario</button>
-        <button data-view="consultas">Consultas</button>
-        <button data-view="receitas">Receitas</button>
-        <button data-view="exames">Exames</button>
-        <button data-view="consultasMes">Consultas do mes</button>
-      </div>
-      <pre id="output" class="output">Clique em uma visao para carregar os dados.</pre>
+    <section class="summary-grid" aria-label="Resumo do sistema">
+      <article>
+        <span id="countPacientes">0</span>
+        <p>Pacientes</p>
+      </article>
+      <article>
+        <span id="countMedicos">0</span>
+        <p>Profissionais</p>
+      </article>
+      <article>
+        <span id="countAgendamentos">0</span>
+        <p>Agendamentos</p>
+      </article>
+      <article>
+        <span id="countConsultas">0</span>
+        <p>Consultas</p>
+      </article>
     </section>
 
-    <section class="band">
-      <div class="section-title">
-        <h2>CRUD</h2>
-        <div class="filters">
-          <label>Recurso
-            <select id="resource">
-              <option value="pacientes">Pacientes</option>
-              <option value="medicos">Medicos</option>
-              <option value="colaboradores">Colaboradores</option>
-              <option value="agendamentos">Agendamentos</option>
-              <option value="consultas">Consultas</option>
-              <option value="exames">Exames</option>
-              <option value="receitas">Receitas</option>
-            </select>
-          </label>
-          <label>ID <input id="recordId" type="number" min="1" placeholder="opcional"></label>
+    <nav class="tabs" aria-label="Áreas do sistema">
+      <button class="active" data-tab="recepcao" type="button">Recepção</button>
+      <button data-tab="cadastros" type="button">Cadastros</button>
+      <button data-tab="atendimento" type="button">Atendimento</button>
+      <button data-tab="relatorios" type="button">Relatórios</button>
+    </nav>
+
+    <section id="recepcao" class="panel active">
+      <div class="panel-header">
+        <div>
+          <h2>Recepção</h2>
+          <p>Controle de agenda, chegada do paciente e cancelamentos.</p>
         </div>
       </div>
-      <div class="actions">
-        <button data-action="GET">Buscar/Listar</button>
-        <button data-action="POST">Cadastrar</button>
-        <button data-action="PUT">Atualizar</button>
-        <button data-action="DELETE">Remover</button>
+
+      <div class="layout two">
+        <form class="form-card" data-form="agendamento">
+          <h3>Novo agendamento</h3>
+          <div class="fields">
+            <label>Paciente <input name="idPaciente" type="number" min="1" required></label>
+            <label>Médico <input name="idMedico" type="number" min="1" required></label>
+            <label>Atendente <input name="idColaborador" type="number" min="1" required></label>
+            <label>Data e hora <input name="dataHora" type="datetime-local" required></label>
+          </div>
+          <button type="submit">Agendar consulta</button>
+        </form>
+
+        <form class="form-card" data-form="agendamentoStatus">
+          <h3>Alterar status</h3>
+          <div class="fields compact">
+            <label>Agendamento <input name="id" type="number" min="1" required></label>
+            <label>Ação
+              <select name="acao">
+                <option value="cancelar">Cancelar</option>
+                <option value="realizar">Marcar realizada</option>
+                <option value="delete">Remover</option>
+              </select>
+            </label>
+          </div>
+          <button type="submit">Aplicar</button>
+        </form>
       </div>
-      <textarea id="payload" spellcheck="false"></textarea>
-      <pre id="crudOutput" class="output">O resultado da operacao aparece aqui.</pre>
+
+      <div class="list-header">
+        <h3>Agendamentos</h3>
+        <button data-load="agendamentos" type="button">Recarregar lista</button>
+      </div>
+      <div id="listaAgendamentos" class="table-wrap"></div>
     </section>
+
+    <section id="cadastros" class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Cadastros</h2>
+          <p>Pacientes, profissionais de saúde e colaboradores da clínica.</p>
+        </div>
+      </div>
+
+      <div class="layout three">
+        <form class="form-card" data-form="paciente">
+          <h3>Paciente</h3>
+          <div class="fields">
+            <label>ID para atualizar/remover <input name="id" type="number" min="1"></label>
+            <label>Nome <input name="nome" required></label>
+            <label>Sobrenome <input name="sobrenome" required></label>
+            <label>Nascimento <input name="nascimento" type="date" required></label>
+            <label>Sexo
+              <select name="sexo">
+                <option>Feminino</option>
+                <option>Masculino</option>
+              </select>
+            </label>
+            <label>Email <input name="email" type="email" required></label>
+            <label>CPF <input name="cpf" maxlength="11" required></label>
+            <label>CEP <input name="cep" maxlength="8"></label>
+            <label>Endereço <input name="logradouro"></label>
+            <label>Número <input name="numero"></label>
+            <label>Bairro <input name="bairro"></label>
+            <label>Cidade <input name="cidade" value="Salvador"></label>
+            <label>UF <input name="estado" maxlength="2" value="BA"></label>
+            <label>DDD <input name="ddd" maxlength="3" value="71"></label>
+            <label>Prefixo <input name="prefixo" maxlength="5"></label>
+            <label>Sufixo <input name="sufixo" maxlength="4"></label>
+          </div>
+          <div class="button-row">
+            <button data-action="post" type="submit">Salvar</button>
+            <button data-action="put" type="submit">Atualizar</button>
+            <button data-action="delete" class="danger" type="submit" formnovalidate>Remover</button>
+          </div>
+        </form>
+
+        <form class="form-card" data-form="medico">
+          <h3>Profissional</h3>
+          <div class="fields">
+            <label>ID para atualizar/remover <input name="id" type="number" min="1"></label>
+            <label>Nome <input name="nome" required></label>
+            <label>Sobrenome <input name="sobrenome" required></label>
+            <label>Especialidade <input name="especialidade"></label>
+            <label>CPF <input name="cpf" maxlength="11" required></label>
+            <label>CRM <input name="crmNumero" maxlength="6"></label>
+            <label>UF CRM <input name="crmUf" maxlength="2" value="BA"></label>
+            <label>RQE <input name="rqe" type="number" min="1"></label>
+          </div>
+          <div class="button-row">
+            <button data-action="post" type="submit">Salvar</button>
+            <button data-action="put" type="submit">Atualizar</button>
+            <button data-action="delete" class="danger" type="submit" formnovalidate>Remover</button>
+          </div>
+        </form>
+
+        <form class="form-card" data-form="colaborador">
+          <h3>Atendente</h3>
+          <div class="fields">
+            <label>ID para atualizar/remover <input name="id" type="number" min="1"></label>
+            <label>Nome <input name="nome" required></label>
+            <label>Sobrenome <input name="sobrenome" required></label>
+            <label>CPF <input name="cpf" maxlength="11" required></label>
+          </div>
+          <div class="button-row">
+            <button data-action="post" type="submit">Salvar</button>
+            <button data-action="put" type="submit">Atualizar</button>
+            <button data-action="delete" class="danger" type="submit" formnovalidate>Remover</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="list-grid">
+        <section>
+          <div class="list-header"><h3>Pacientes</h3><button data-load="pacientes" type="button">Recarregar</button></div>
+          <div id="listaPacientes" class="table-wrap"></div>
+        </section>
+        <section>
+          <div class="list-header"><h3>Profissionais</h3><button data-load="medicos" type="button">Recarregar</button></div>
+          <div id="listaMedicos" class="table-wrap"></div>
+        </section>
+        <section>
+          <div class="list-header"><h3>Atendentes</h3><button data-load="colaboradores" type="button">Recarregar</button></div>
+          <div id="listaColaboradores" class="table-wrap"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="atendimento" class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Atendimento médico</h2>
+          <p>Registro de consulta, diagnóstico, exames e receita.</p>
+        </div>
+      </div>
+
+      <div class="layout two">
+        <form class="form-card" data-form="consulta">
+          <h3>Consulta</h3>
+          <div class="fields">
+            <label>ID para atualizar/remover <input name="id" type="number" min="1"></label>
+            <label>Agendamento <input name="idAgendamento" type="number" min="1" required></label>
+            <label>Data do registro <input name="dataHoraRegistro" type="datetime-local" required></label>
+            <label class="wide">Sintomas <textarea name="sintomas" rows="3"></textarea></label>
+            <label class="wide">Anamnese <textarea name="anamnese" rows="4"></textarea></label>
+          </div>
+          <div class="button-row">
+            <button data-action="post" type="submit">Registrar</button>
+            <button data-action="put" type="submit">Atualizar</button>
+            <button data-action="delete" class="danger" type="submit" formnovalidate>Remover</button>
+          </div>
+        </form>
+
+        <form class="form-card" data-form="prontuario">
+          <h3>Prontuário da consulta</h3>
+          <div class="fields">
+            <label>Consulta <input name="idConsulta" type="number" min="1" required></label>
+            <label>Data do registro <input name="dataHoraRegistro" type="datetime-local" required></label>
+            <label class="wide">Diagnóstico <textarea name="diagnostico" rows="3" required></textarea></label>
+            <label class="wide">Tratamento <textarea name="tratamento" rows="4" required></textarea></label>
+          </div>
+          <button type="submit">Salvar no prontuário</button>
+        </form>
+      </div>
+
+      <div class="layout two">
+        <form class="form-card" data-form="exame">
+          <h3>Exame</h3>
+          <div class="fields">
+            <label>ID para atualizar/remover <input name="id" type="number" min="1"></label>
+            <label>Consulta <input name="idConsulta" type="number" min="1" required></label>
+            <label>Tipo de exame <input name="tipoExame" required></label>
+            <label>Solicitação <input name="dataSolicitacao" type="date" required></label>
+            <label>Resultado em <input name="dataResultado" type="date"></label>
+            <label class="wide">Resultado <textarea name="resultado" rows="3"></textarea></label>
+          </div>
+          <div class="button-row">
+            <button data-action="post" type="submit">Solicitar</button>
+            <button data-action="put" type="submit">Atualizar</button>
+            <button data-action="patch" type="submit">Registrar resultado</button>
+            <button data-action="delete" class="danger" type="submit" formnovalidate>Remover</button>
+          </div>
+        </form>
+
+        <form class="form-card" data-form="receita">
+          <h3>Receita</h3>
+          <div class="fields">
+            <label>ID para atualizar/remover <input name="id" type="number" min="1"></label>
+            <label>Consulta <input name="idConsulta" type="number" min="1" required></label>
+            <label>Emissão <input name="dataHoraEmissao" type="datetime-local" required></label>
+            <label>Medicamento <input name="nomeMedicamento" required></label>
+            <label>Princípio ativo <input name="principioAtivo" required></label>
+            <label>Dosagem <input name="dosagem" required></label>
+            <label>Frequência <input name="frequencia" required></label>
+            <label>Duração em dias <input name="duracaoDias" type="number" min="1" required></label>
+            <label class="wide">Instruções <textarea name="instrucoes" rows="3"></textarea></label>
+          </div>
+          <div class="button-row">
+            <button data-action="post" type="submit">Emitir</button>
+            <button data-action="put" type="submit">Atualizar</button>
+            <button data-action="delete" class="danger" type="submit" formnovalidate>Remover</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="list-grid">
+        <section>
+          <div class="list-header"><h3>Consultas</h3><button data-load="consultas" type="button">Recarregar</button></div>
+          <div id="listaConsultas" class="table-wrap"></div>
+        </section>
+        <section>
+          <div class="list-header"><h3>Exames</h3><button data-load="exames" type="button">Recarregar</button></div>
+          <div id="listaExames" class="table-wrap"></div>
+        </section>
+        <section>
+          <div class="list-header"><h3>Receitas</h3><button data-load="receitas" type="button">Recarregar</button></div>
+          <div id="listaReceitas" class="table-wrap"></div>
+        </section>
+      </div>
+    </section>
+
+    <section id="relatorios" class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Relatórios</h2>
+          <p>Consultas do mês, prontuário do paciente e apresentação dos resultados exigidos.</p>
+        </div>
+      </div>
+
+      <div class="layout two">
+        <form class="form-card" data-form="relatorioMes">
+          <h3>Consultas por mês</h3>
+          <div class="fields compact">
+            <label>Mês <input name="mes" type="number" min="1" max="12" value="5" required></label>
+            <label>Ano <input name="ano" type="number" min="2000" value="2026" required></label>
+          </div>
+          <button type="submit">Gerar relatório</button>
+        </form>
+
+        <form class="form-card" data-form="historicoPaciente">
+          <h3>Prontuário do paciente</h3>
+          <div class="fields compact">
+            <label>Paciente <input name="idPaciente" type="number" min="1" value="1" required></label>
+          </div>
+          <button type="submit">Consultar histórico</button>
+        </form>
+      </div>
+
+      <div id="resultadoRelatorio" class="table-wrap result-large"></div>
+    </section>
+
+    <aside class="toast" id="toast" hidden></aside>
   </main>
 
   <script src="app.js"></script>

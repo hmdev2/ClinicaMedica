@@ -1,155 +1,452 @@
-const output = document.querySelector("#output");
-const crudOutput = document.querySelector("#crudOutput");
-const payload = document.querySelector("#payload");
-const resource = document.querySelector("#resource");
-const recordId = document.querySelector("#recordId");
-const mes = document.querySelector("#mes");
-const ano = document.querySelector("#ano");
-const pacienteProntuario = document.querySelector("#pacienteProntuario");
-
-const samples = {
-  pacientes: {
-    nome: "Lucas",
-    sobrenome: "Moura",
-    nascimento: "1990-04-15",
-    sexo: "Masculino",
-    email: "lucas.moura@email.com",
-    cpf: "12345678901",
-    endereco: {
-      logradouro: "Rua Central",
-      numero: "100",
-      complemento: "Sala 2",
-      bairro: "Centro",
-      cidade: "Salvador",
-      estado: "BA",
-      cep: "40000000"
-    },
-    telefones: [
-      { ddi: "55", ddd: "71", prefixo: "99999", sufixo: "0000" }
-    ]
-  },
-  medicos: {
-    nome: "Carla",
-    sobrenome: "Nunes",
-    especialidade: "Dermatologia",
-    cpf: "12345678902",
-    crms: [{ numero: "445566", uf: "BA", rqe: 123 }]
-  },
-  colaboradores: {
-    nome: "Marina",
-    sobrenome: "Alves",
-    cpf: "12345678903"
-  },
-  agendamentos: {
-    idPaciente: 1,
-    idMedico: 1,
-    idColaborador: 1,
-    dataHora: "2026-06-10 09:00:00",
-    status: "Agendado"
-  },
-  consultas: {
-    idAgendamento: 1,
-    sintomas: "Dor de garganta",
-    anamnese: "Paciente relata sintomas ha dois dias.",
-    dataHoraRegistro: "2026-06-10 09:30:00"
-  },
-  exames: {
-    idConsulta: 1,
-    tipoExame: "Hemograma completo",
-    resultado: null,
-    dataSolicitacao: "2026-06-10",
-    dataResultado: null
-  },
-  receitas: {
-    idConsulta: 1,
-    dataHoraEmissao: "2026-06-10 09:40:00",
-    instrucoes: "Tomar conforme orientacao medica.",
-    itens: [
-      {
-        nome: "Dipirona 500mg",
-        principioAtivo: "Dipirona sodica",
-        dosagem: "500mg",
-        frequencia: "A cada 6 horas se dor",
-        duracaoDias: 3
-      }
-    ]
-  }
+const state = {
+  pacientes: [],
+  medicos: [],
+  colaboradores: [],
+  agendamentos: [],
+  consultas: [],
+  exames: [],
+  receitas: []
 };
 
-const views = {
-  agendamentos: () => "/api/agendamentos",
-  pacientes: () => "/api/pacientes",
-  colaboradores: () => "/api/colaboradores",
-  medicos: () => "/api/medicos",
-  prontuario: () => `/api/prontuarios/paciente/${pacienteProntuario.value || 1}`,
-  consultas: () => "/api/consultas",
-  receitas: () => "/api/receitas",
-  exames: () => "/api/exames",
-  consultasMes: () => `/api/consultas?mes=${mes.value || 1}&ano=${ano.value || 2026}`
+const lists = {
+  pacientes: document.querySelector("#listaPacientes"),
+  medicos: document.querySelector("#listaMedicos"),
+  colaboradores: document.querySelector("#listaColaboradores"),
+  agendamentos: document.querySelector("#listaAgendamentos"),
+  consultas: document.querySelector("#listaConsultas"),
+  exames: document.querySelector("#listaExames"),
+  receitas: document.querySelector("#listaReceitas")
 };
 
-async function request(url, options = {}) {
-  const response = await fetch(url, {
+const toast = document.querySelector("#toast");
+
+document.querySelectorAll(".tabs button").forEach((button) => {
+  button.addEventListener("click", () => showTab(button.dataset.tab));
+});
+
+document.querySelectorAll("[data-load]").forEach((button) => {
+  button.addEventListener("click", () => loadResource(button.dataset.load));
+});
+
+document.querySelectorAll("form[data-form]").forEach((form) => {
+  form.addEventListener("submit", handleForm);
+});
+
+document.querySelector("#refreshDashboard").addEventListener("click", loadDashboard);
+
+function showTab(id) {
+  document.querySelectorAll(".tabs button").forEach((button) => {
+    button.classList.toggle("active", button.dataset.tab === id);
+  });
+  document.querySelectorAll(".panel").forEach((panel) => {
+    panel.classList.toggle("active", panel.id === id);
+  });
+}
+
+async function api(path, options = {}) {
+  const response = await fetch(path, {
     headers: { "Content-Type": "application/json" },
     ...options
   });
+
   const text = await response.text();
-  let data = text;
-  try {
-    data = text ? JSON.parse(text) : null;
-  } catch (_) {
-  }
+  const data = text ? JSON.parse(text) : null;
 
   if (!response.ok) {
-    throw new Error(JSON.stringify(data, null, 2));
+    const message = data && (data.erro || data.error) ? data.erro || data.error : text;
+    throw new Error(message || "Erro ao comunicar com o servidor");
   }
 
   return data;
 }
 
-function print(target, value) {
-  target.textContent = typeof value === "string" ? value : JSON.stringify(value, null, 2);
+function formData(form) {
+  return Object.fromEntries(new FormData(form).entries());
 }
 
-async function loadView(name) {
-  print(output, "Carregando...");
+function asDateTime(value) {
+  return value ? value.replace("T", " ") + ":00" : null;
+}
+
+function numberOrNull(value) {
+  return value === "" || value == null ? null : Number(value);
+}
+
+function clean(object) {
+  return Object.fromEntries(
+    Object.entries(object).filter(([, value]) => value !== "" && value !== null && value !== undefined)
+  );
+}
+
+async function handleForm(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const action = event.submitter?.dataset.action || "post";
+
   try {
-    print(output, await request(views[name]()));
+    switch (form.dataset.form) {
+      case "paciente":
+        await submitCrud("pacientes", action, buildPaciente(formData(form)));
+        break;
+      case "medico":
+        await submitCrud("medicos", action, buildMedico(formData(form)));
+        break;
+      case "colaborador":
+        await submitCrud("colaboradores", action, buildColaborador(formData(form)));
+        break;
+      case "agendamento":
+        await api("/api/agendamentos", {
+          method: "POST",
+          body: JSON.stringify(buildAgendamento(formData(form)))
+        });
+        notify("Agendamento criado com sucesso");
+        form.reset();
+        await loadResource("agendamentos");
+        break;
+      case "agendamentoStatus":
+        await submitAgendamentoStatus(formData(form));
+        form.reset();
+        await loadResource("agendamentos");
+        break;
+      case "consulta":
+        await submitCrud("consultas", action, buildConsulta(formData(form)));
+        break;
+      case "prontuario":
+        await submitProntuario(formData(form));
+        form.reset();
+        break;
+      case "exame":
+        await submitExame(form, action);
+        break;
+      case "receita":
+        await submitCrud("receitas", action, buildReceita(formData(form)));
+        break;
+      case "relatorioMes":
+        await loadConsultasMes(formData(form));
+        break;
+      case "historicoPaciente":
+        await loadHistorico(formData(form));
+        break;
+      default:
+        throw new Error("Formulario nao reconhecido");
+    }
   } catch (error) {
-    print(output, error.message);
+    notify(error.message, true);
   }
 }
 
-async function runCrud(method) {
-  const id = recordId.value.trim();
-  const url = `/api/${resource.value}${id ? `/${id}` : ""}`;
-  const options = { method };
+async function submitCrud(resource, action, payload) {
+  const id = payload.id;
+  delete payload.id;
 
-  if (method === "POST" || method === "PUT") {
-    options.body = payload.value;
+  if (action === "delete") {
+    requireId(id);
+    await api(`/api/${resource}/${id}`, { method: "DELETE" });
+    notify("Registro removido com sucesso");
+  } else if (action === "put") {
+    requireId(id);
+    await api(`/api/${resource}/${id}`, {
+      method: "PUT",
+      body: JSON.stringify(payload)
+    });
+    notify("Registro atualizado com sucesso");
+  } else {
+    await api(`/api/${resource}`, {
+      method: "POST",
+      body: JSON.stringify(payload)
+    });
+    notify("Registro salvo com sucesso");
   }
 
-  print(crudOutput, "Processando...");
-  try {
-    print(crudOutput, await request(url, options));
-  } catch (error) {
-    print(crudOutput, error.message);
+  await loadResource(resource);
+  await loadDashboard();
+}
+
+function requireId(id) {
+  if (!id) {
+    throw new Error("Informe o ID para atualizar ou remover");
   }
 }
 
-document.querySelectorAll("[data-view]").forEach((button) => {
-  button.addEventListener("click", () => loadView(button.dataset.view));
-});
+function buildPaciente(data) {
+  return {
+    id: numberOrNull(data.id),
+    nome: data.nome,
+    sobrenome: data.sobrenome,
+    nascimento: data.nascimento,
+    sexo: data.sexo,
+    email: data.email,
+    cpf: data.cpf,
+    endereco: clean({
+      logradouro: data.logradouro,
+      numero: data.numero,
+      bairro: data.bairro,
+      cidade: data.cidade,
+      estado: data.estado,
+      cep: data.cep
+    }),
+    telefones: data.ddd || data.prefixo || data.sufixo
+      ? [clean({ ddi: "55", ddd: data.ddd, prefixo: data.prefixo, sufixo: data.sufixo })]
+      : []
+  };
+}
 
-document.querySelectorAll("[data-action]").forEach((button) => {
-  button.addEventListener("click", () => runCrud(button.dataset.action));
-});
+function buildMedico(data) {
+  const crm = clean({
+    numero: data.crmNumero,
+    uf: data.crmUf,
+    rqe: numberOrNull(data.rqe)
+  });
 
-document.querySelector("#refreshAll").addEventListener("click", () => loadView("agendamentos"));
+  return {
+    id: numberOrNull(data.id),
+    nome: data.nome,
+    sobrenome: data.sobrenome,
+    especialidade: data.especialidade,
+    cpf: data.cpf,
+    crms: crm.numero ? [crm] : []
+  };
+}
 
-resource.addEventListener("change", () => {
-  payload.value = JSON.stringify(samples[resource.value], null, 2);
-});
+function buildColaborador(data) {
+  return {
+    id: numberOrNull(data.id),
+    nome: data.nome,
+    sobrenome: data.sobrenome,
+    cpf: data.cpf
+  };
+}
 
-payload.value = JSON.stringify(samples[resource.value], null, 2);
-loadView("agendamentos");
+function buildAgendamento(data) {
+  return {
+    idPaciente: Number(data.idPaciente),
+    idMedico: Number(data.idMedico),
+    idColaborador: Number(data.idColaborador),
+    dataHora: asDateTime(data.dataHora),
+    status: data.status || "Agendado"
+  };
+}
+
+function buildConsulta(data) {
+  return {
+    id: numberOrNull(data.id),
+    idAgendamento: Number(data.idAgendamento),
+    sintomas: data.sintomas,
+    anamnese: data.anamnese,
+    dataHoraRegistro: asDateTime(data.dataHoraRegistro)
+  };
+}
+
+function buildExame(data) {
+  return {
+    id: numberOrNull(data.id),
+    idConsulta: Number(data.idConsulta),
+    tipoExame: data.tipoExame,
+    resultado: data.resultado || null,
+    dataSolicitacao: data.dataSolicitacao,
+    dataResultado: data.dataResultado || null
+  };
+}
+
+function buildReceita(data) {
+  return {
+    id: numberOrNull(data.id),
+    idConsulta: Number(data.idConsulta),
+    dataHoraEmissao: asDateTime(data.dataHoraEmissao),
+    instrucoes: data.instrucoes,
+    itens: [
+      {
+        nome: data.nomeMedicamento,
+        principioAtivo: data.principioAtivo,
+        dosagem: data.dosagem,
+        frequencia: data.frequencia,
+        duracaoDias: Number(data.duracaoDias)
+      }
+    ]
+  };
+}
+
+async function submitAgendamentoStatus(data) {
+  const id = Number(data.id);
+  requireId(id);
+
+  if (data.acao === "delete") {
+    await api(`/api/agendamentos/${id}`, { method: "DELETE" });
+    notify("Agendamento removido");
+    return;
+  }
+
+  await api(`/api/agendamentos/${id}/${data.acao}`, { method: "PATCH" });
+  notify(data.acao === "cancelar" ? "Agendamento cancelado" : "Agendamento marcado como realizado");
+}
+
+async function submitProntuario(data) {
+  await api(`/api/consultas/${data.idConsulta}/prontuario`, {
+    method: "POST",
+    body: JSON.stringify({
+      diagnostico: data.diagnostico,
+      tratamento: data.tratamento,
+      dataHoraRegistro: asDateTime(data.dataHoraRegistro)
+    })
+  });
+  notify("Registro salvo no prontuario");
+}
+
+async function submitExame(form, action) {
+  const payload = buildExame(formData(form));
+  const id = payload.id;
+
+  if (action === "patch") {
+    requireId(id);
+    await api(`/api/exames/${id}/resultado`, {
+      method: "PATCH",
+      body: JSON.stringify({
+        resultado: payload.resultado,
+        dataResultado: payload.dataResultado
+      })
+    });
+    notify("Resultado do exame registrado");
+    await loadResource("exames");
+    return;
+  }
+
+  await submitCrud("exames", action, payload);
+}
+
+async function loadDashboard() {
+  await Promise.all([
+    loadResource("pacientes"),
+    loadResource("medicos"),
+    loadResource("colaboradores"),
+    loadResource("agendamentos"),
+    loadResource("consultas"),
+    loadResource("exames"),
+    loadResource("receitas")
+  ]);
+
+  document.querySelector("#countPacientes").textContent = state.pacientes.length;
+  document.querySelector("#countMedicos").textContent = state.medicos.length;
+  document.querySelector("#countAgendamentos").textContent = state.agendamentos.length;
+  document.querySelector("#countConsultas").textContent = state.consultas.length;
+}
+
+async function loadResource(resource) {
+  state[resource] = await api(`/api/${resource}`);
+  renderResource(resource);
+}
+
+function renderResource(resource) {
+  const data = state[resource] || [];
+  const target = lists[resource];
+  if (!target) return;
+
+  const columns = {
+    pacientes: ["id", "nome", "sobrenome", "cpf", "email", "sexo"],
+    medicos: ["id", "nome", "sobrenome", "especialidade", "cpf", "crms"],
+    colaboradores: ["id", "nome", "sobrenome", "cpf"],
+    agendamentos: ["id", "paciente", "medico", "colaborador", "dataHora", "status"],
+    consultas: ["id", "idAgendamento", "paciente", "medico", "sintomas", "dataHoraRegistro"],
+    exames: ["id", "idConsulta", "tipoExame", "resultado", "dataSolicitacao", "dataResultado"],
+    receitas: ["id", "idConsulta", "dataHoraEmissao", "instrucoes", "itens"]
+  }[resource];
+
+  target.innerHTML = table(data, columns);
+}
+
+async function loadConsultasMes(data) {
+  const result = await api(`/api/consultas?mes=${data.mes}&ano=${data.ano}`);
+  document.querySelector("#resultadoRelatorio").innerHTML = table(result, [
+    "id",
+    "paciente",
+    "medico",
+    "sintomas",
+    "anamnese",
+    "dataHoraRegistro"
+  ]);
+  notify("Relatorio gerado");
+}
+
+async function loadHistorico(data) {
+  const result = await api(`/api/prontuarios/paciente/${data.idPaciente}`);
+  document.querySelector("#resultadoRelatorio").innerHTML = table(result, [
+    "id",
+    "paciente",
+    "medico",
+    "especialidadeMedico",
+    "diagnostico",
+    "tratamento",
+    "dataHoraConsulta"
+  ]);
+  notify("Historico carregado");
+}
+
+function table(data, columns) {
+  if (!data || data.length === 0) {
+    return '<p class="empty">Nenhum registro encontrado.</p>';
+  }
+
+  const head = columns.map((column) => `<th>${label(column)}</th>`).join("");
+  const rows = data.map((item) => {
+    const cells = columns.map((column) => `<td>${formatValue(column, item[column])}</td>`).join("");
+    return `<tr>${cells}</tr>`;
+  }).join("");
+
+  return `<table><thead><tr>${head}</tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+function label(value) {
+  return value
+    .replace(/([A-Z])/g, " $1")
+    .replace(/^id$/, "ID")
+    .replace(/^id /, "ID ")
+    .replace("data Hora", "Data hora")
+    .replace("datahora", "Data hora")
+    .replace("cpf", "CPF")
+    .replace("crms", "CRMs")
+    .replace("itens", "Medicamentos");
+}
+
+function formatValue(column, value) {
+  if (value == null || value === "") return "-";
+
+  if (column === "status") {
+    const kind = value === "Realizado" ? "ok" : value === "Cancelado" ? "off" : "warn";
+    return `<span class="badge ${kind}">${escapeHtml(value)}</span>`;
+  }
+
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "-";
+    return value.map((item) => {
+      if (item.numero && item.uf) return `CRM-${escapeHtml(item.uf)} ${escapeHtml(item.numero)}`;
+      if (item.nome) return `${escapeHtml(item.nome)} (${escapeHtml(item.dosagem || "")})`;
+      return escapeHtml(JSON.stringify(item));
+    }).join("<br>");
+  }
+
+  if (typeof value === "object") {
+    return escapeHtml(JSON.stringify(value));
+  }
+
+  return escapeHtml(String(value));
+}
+
+function escapeHtml(value) {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+function notify(message, isError = false) {
+  toast.textContent = message;
+  toast.hidden = false;
+  toast.style.background = isError ? "#8f1b13" : "#152b35";
+  clearTimeout(notify.timer);
+  notify.timer = setTimeout(() => {
+    toast.hidden = true;
+  }, 4200);
+}
+
+loadDashboard().catch((error) => notify(error.message, true));
