@@ -1,0 +1,152 @@
+:root {
+  color-scheme: light;
+  --ink: #1d2530;
+  --muted: #617080;
+  --line: #d7dee6;
+  --panel: #ffffff;
+  --bg: #eef2f6;
+  --accent: #0f766e;
+  --accent-dark: #115e59;
+  --danger: #b42318;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: center;
+  padding: 24px 32px;
+  background: #15202b;
+  color: #fff;
+}
+
+h1, h2, p {
+  margin: 0;
+}
+
+h1 {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 19px;
+}
+
+.topbar p {
+  margin-top: 6px;
+  color: #c9d3df;
+}
+
+main {
+  width: min(1180px, calc(100% - 32px));
+  margin: 24px auto;
+  display: grid;
+  gap: 20px;
+}
+
+.band {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 18px;
+}
+
+.section-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.filters, .views, .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+label {
+  display: inline-flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+input, select, textarea {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  color: var(--ink);
+  font: inherit;
+}
+
+input, select {
+  height: 36px;
+  padding: 0 10px;
+  background: #fff;
+}
+
+button {
+  min-height: 36px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  padding: 0 12px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-dark);
+}
+
+textarea {
+  width: 100%;
+  min-height: 220px;
+  margin-top: 12px;
+  padding: 12px;
+  resize: vertical;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.output {
+  min-height: 220px;
+  max-height: 480px;
+  overflow: auto;
+  margin: 14px 0 0;
+  padding: 14px;
+  border-radius: 8px;
+  background: #101820;
+  color: #e8f1f8;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 13px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 760px) {
+  .topbar, .section-title {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .topbar {
+    padding: 20px;
+  }
+}

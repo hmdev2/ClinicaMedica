@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clinica Medica</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>Clinica Medica</h1>
+      <p>Gestao de agendamentos, atendimentos, prontuarios, exames e receitas</p>
+    </div>
+    <button id="refreshAll" type="button">Atualizar visoes</button>
+  </header>
+
+  <main>
+    <section class="band">
+      <div class="section-title">
+        <h2>Apresentacao exigida</h2>
+        <div class="filters">
+          <label>Mes <input id="mes" type="number" min="1" max="12" value="5"></label>
+          <label>Ano <input id="ano" type="number" min="2000" value="2026"></label>
+          <label>Paciente <input id="pacienteProntuario" type="number" min="1" value="1"></label>
+        </div>
+      </div>
+      <div class="views">
+        <button data-view="agendamentos">Agendamentos</button>
+        <button data-view="pacientes">Pacientes</button>
+        <button data-view="colaboradores">Colaboradores</button>
+        <button data-view="medicos">Profissionais</button>
+        <button data-view="prontuario">Prontuario</button>
+        <button data-view="consultas">Consultas</button>
+        <button data-view="receitas">Receitas</button>
+        <button data-view="exames">Exames</button>
+        <button data-view="consultasMes">Consultas do mes</button>
+      </div>
+      <pre id="output" class="output">Clique em uma visao para carregar os dados.</pre>
+    </section>
+
+    <section class="band">
+      <div class="section-title">
+        <h2>CRUD</h2>
+        <div class="filters">
+          <label>Recurso
+            <select id="resource">
+              <option value="pacientes">Pacientes</option>
+              <option value="medicos">Medicos</option>
+              <option value="colaboradores">Colaboradores</option>
+              <option value="agendamentos">Agendamentos</option>
+              <option value="consultas">Consultas</option>
+              <option value="exames">Exames</option>
+              <option value="receitas">Receitas</option>
+            </select>
+          </label>
+          <label>ID <input id="recordId" type="number" min="1" placeholder="opcional"></label>
+        </div>
+      </div>
+      <div class="actions">
+        <button data-action="GET">Buscar/Listar</button>
+        <button data-action="POST">Cadastrar</button>
+        <button data-action="PUT">Atualizar</button>
+        <button data-action="DELETE">Remover</button>
+      </div>
+      <textarea id="payload" spellcheck="false"></textarea>
+      <pre id="crudOutput" class="output">O resultado da operacao aparece aqui.</pre>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
