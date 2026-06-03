@@ -230,4 +230,36 @@ public class ReceitaDAO extends BaseDAO {
             con.close();
         }
     }
+
+    public void insertItem(Long receitaId, ItemReceitaDTO item) throws SQLException {
+        String sql = "INSERT INTO item_receita (id_receita, nome, principio_ativo, dosagem, frequencia, duracao_dias) "
+                + "VALUES (?, ?, ?, ?, ?, ?)";
+
+        try (
+            Connection con = DatabaseConnection.connect();
+            PreparedStatement ps = con.prepareStatement(sql);
+        ) {
+            ps.setLong(1, receitaId);
+            ps.setString(2, item.getNome());
+            ps.setString(3, item.getPrincipioAtivo());
+            ps.setString(4, item.getDosagem());
+            ps.setString(5, item.getFrequencia());
+            ps.setInt(6, item.getDuracaoDias());
+            ps.executeUpdate();
+        }
+    }
+
+
+    public void deleteItem(Long itemId) throws SQLException {
+        String sql = "DELETE FROM item_receita WHERE id = ?";
+
+        try (
+            Connection con = DatabaseConnection.connect();
+            PreparedStatement ps = con.prepareStatement(sql);
+        ) {
+            ps.setLong(1, itemId);
+            int rows = ps.executeUpdate();
+            if (rows == 0) throw new IllegalArgumentException("Item não encontrado: id " + itemId);
+        }
+    }
 }

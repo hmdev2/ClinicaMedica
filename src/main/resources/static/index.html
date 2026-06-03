@@ -250,7 +250,7 @@
         </div>
       </div>
 
-      <div class="layout two">
+      <div class="layout three">
         <form class="form-card" data-form="receita">
           <h3>Emitir receita</h3>
           <div class="fields">
@@ -268,6 +268,24 @@
             <button data-action="post" type="submit">Emitir</button>
             <button data-action="put" type="submit">Atualizar</button>
             <button data-action="delete" class="danger" type="submit" formnovalidate>Remover</button>
+          </div>
+        </form>
+
+        <form class="form-card" data-form="itemReceita">
+          <h3>Adicionar medicamento</h3>
+          <p>Adiciona um item a uma receita já existente.</p>
+          <div class="fields">
+            <label>ID da receita <input name="idReceita" type="number" min="1" required></label>
+            <label>ID para remover item <input name="idItem" type="number" min="1"></label>
+            <label>Medicamento <input name="nomeMedicamento" required></label>
+            <label>Princípio ativo <input name="principioAtivo" required></label>
+            <label>Dosagem <input name="dosagem" required></label>
+            <label>Frequência <input name="frequencia" required></label>
+            <label>Duração em dias <input name="duracaoDias" type="number" min="1" required></label>
+          </div>
+          <div class="button-row">
+            <button data-action="post" type="submit">Adicionar</button>
+            <button data-action="delete" class="danger" type="submit" formnovalidate>Remover item</button>
           </div>
         </form>
 
