@@ -227,6 +227,8 @@ public class PacienteDAO extends BaseDAO {
 	    String sqlPaciente = "UPDATE paciente SET nome = ?, sobrenome = ?, nascimento = ?, sexo = ?, email = ?, cpf = ? WHERE id = ?";
 	    String sqlEnderecoUpdate = "UPDATE endereco SET logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, estado = ?, cep = ? WHERE id_paciente = ?";
 	    String sqlEnderecoInsert = "INSERT INTO endereco (id_paciente, logradouro, numero, complemento, bairro, cidade, estado, cep) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+	    String sqlTelefoneDelete = "DELETE FROM telefone WHERE id_paciente = ?";
+	    String sqlTelefoneInsert = "INSERT INTO telefone (id_paciente, ddi, ddd, prefixo, sufixo) VALUES (?, ?, ?, ?, ?)";
 	    
 
 	    Connection con = DatabaseConnection.connect();
@@ -278,6 +280,27 @@ public class PacienteDAO extends BaseDAO {
 
 	                        insert.executeUpdate();
 	                    }
+	                }
+	            }
+	        }
+
+	        if (dto.getTelefones() != null) {
+	            try (PreparedStatement ps = con.prepareStatement(sqlTelefoneDelete)) {
+	                ps.setLong(1, dto.getId());
+	                ps.executeUpdate();
+	            }
+
+	            if (!dto.getTelefones().isEmpty()) {
+	                try (PreparedStatement ps = con.prepareStatement(sqlTelefoneInsert)) {
+	                    for (var t : dto.getTelefones()) {
+	                        ps.setLong(1, dto.getId());
+	                        ps.setString(2, t.getDdi());
+	                        ps.setString(3, t.getDdd());
+	                        ps.setString(4, t.getPrefixo());
+	                        ps.setString(5, t.getSufixo());
+	                        ps.addBatch();
+	                    }
+	                    ps.executeBatch();
 	                }
 	            }
 	        }
