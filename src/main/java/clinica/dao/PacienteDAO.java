@@ -222,4 +222,74 @@ public class PacienteDAO extends BaseDAO {
 		return null;
 	}
 	
+	public void update(PacienteDTO dto) throws SQLException {
+
+	    String sqlPaciente = "UPDATE paciente SET nome = ?, sobrenome = ?, nascimento = ?, sexo = ?, email = ?, cpf = ? WHERE id = ?";
+	    String sqlEnderecoUpdate = "UPDATE endereco SET logradouro = ?, numero = ?, complemento = ?, bairro = ?, cidade = ?, estado = ?, cep = ? WHERE id_paciente = ?";
+	    String sqlEnderecoInsert = "INSERT INTO endereco (id_paciente, logradouro, numero, complemento, bairro, cidade, estado, cep) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+	    
+
+	    Connection con = DatabaseConnection.connect();
+
+	    try {
+	        con.setAutoCommit(false);
+
+	        try (PreparedStatement ps = con.prepareStatement(sqlPaciente)) {
+
+	            ps.setString(1, dto.getNome());
+	            ps.setString(2, dto.getSobrenome());
+	            ps.setDate(3, Date.valueOf(dto.getNascimento()));
+	            ps.setString(4, dto.getSexo());
+	            ps.setString(5, dto.getEmail());
+	            ps.setString(6, dto.getCpf());
+	            ps.setLong(7, dto.getId());
+
+	            ps.executeUpdate();
+	        }
+
+	        if (dto.getEndereco() != null) {
+
+	            try (PreparedStatement ps = con.prepareStatement(sqlEnderecoUpdate)) {
+
+	                var e = dto.getEndereco();
+
+	                ps.setString(1, e.getLogradouro());
+	                ps.setString(2, e.getNumero());
+	                ps.setString(3, e.getComplemento());
+	                ps.setString(4, e.getBairro());
+	                ps.setString(5, e.getCidade());
+	                ps.setString(6, e.getEstado());
+	                ps.setString(7, e.getCep());
+	                ps.setLong(8, dto.getId());
+
+	                int rows = ps.executeUpdate();
+
+	                if (rows == 0) {
+	                    try (PreparedStatement insert = con.prepareStatement(sqlEnderecoInsert)) {
+
+	                        insert.setLong(1, dto.getId());
+	                        insert.setString(2, e.getLogradouro());
+	                        insert.setString(3, e.getNumero());
+	                        insert.setString(4, e.getComplemento());
+	                        insert.setString(5, e.getBairro());
+	                        insert.setString(6, e.getCidade());
+	                        insert.setString(7, e.getEstado());
+	                        insert.setString(8, e.getCep());
+
+	                        insert.executeUpdate();
+	                    }
+	                }
+	            }
+	        }
+
+	        con.commit();
+
+	    } catch (Exception e) {
+	        con.rollback();
+	        throw e;
+	    } finally {
+	        con.setAutoCommit(true);
+	        con.close();
+	    }
+	}
 }
