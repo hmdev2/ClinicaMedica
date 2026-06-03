@@ -112,6 +112,39 @@ public class PacienteHandler extends BaseHandler {
         	sendJson(exchange, 200, resp);
         	return;
         }
+        
+        
+        if ("DELETE".equalsIgnoreCase(exchange.getRequestMethod())) {
+
+            String path = exchange.getRequestURI().getPath();
+            String[] parts = path.split("/");
+
+            if (parts.length != 4) {
+                exchange.sendResponseHeaders(405, -1);
+                return;
+            }
+
+            Long id;
+
+            try {
+                id = Long.parseLong(parts[3]);
+            } catch (NumberFormatException e) {
+                sendJson(exchange, 400, Map.of("error", "ID inválido"));
+                return;
+            }
+
+            PacienteDTO p = dao.findById(id);
+
+            if (p == null) {
+                sendJson(exchange, 404, Map.of("error", "Paciente não encontrado"));
+                return;
+            }
+
+            dao.delete(id);
+
+            sendJson(exchange, 200, Map.of("mensagem", "Paciente deletado com sucesso"));
+            return;
+        }
 
         exchange.sendResponseHeaders(405, -1);
     }

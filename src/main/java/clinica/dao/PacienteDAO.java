@@ -292,4 +292,42 @@ public class PacienteDAO extends BaseDAO {
 	        con.close();
 	    }
 	}
+	
+	
+	public void delete(Long id) throws SQLException {
+
+	    String sqlTelefone = "DELETE FROM telefone WHERE id_paciente = ?";
+	    String sqlEndereco = "DELETE FROM endereco WHERE id_paciente = ?";
+	    String sqlPaciente = "DELETE FROM paciente WHERE id = ?";
+
+	    Connection con = DatabaseConnection.connect();
+
+	    try {
+	        con.setAutoCommit(false);
+
+	        try (PreparedStatement ps = con.prepareStatement(sqlTelefone)) {
+	            ps.setLong(1, id);
+	            ps.executeUpdate();
+	        }
+
+	        try (PreparedStatement ps = con.prepareStatement(sqlEndereco)) {
+	            ps.setLong(1, id);
+	            ps.executeUpdate();
+	        }
+
+	        try (PreparedStatement ps = con.prepareStatement(sqlPaciente)) {
+	            ps.setLong(1, id);
+	            ps.executeUpdate();
+	        }
+
+	        con.commit();
+
+	    } catch (Exception e) {
+	        con.rollback();
+	        throw e;
+	    } finally {
+	        con.setAutoCommit(true);
+	        con.close();
+	    }
+	}
 }
