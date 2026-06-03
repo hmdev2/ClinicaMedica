@@ -138,12 +138,39 @@ async function handleForm(event) {
       case "receitaConsulta":
         await loadReceitaConsulta(formData(form));
         break;
+      case "itemReceita":
+        await submitItemReceita(event.submitter?.dataset.action, formData(form));
+        form.reset();
+        await loadResource("receitas");
+        break;
       default:
         throw new Error("Formulário não reconhecido");
     }
   } catch (error) {
     notify(error.message, true);
   }
+}
+
+async function submitItemReceita(action, data) {
+  if (action === "delete") {
+    requireId(numberOrNull(data.idItem));
+    await api(`/api/receitas/itens/${data.idItem}`, { method: "DELETE" });
+    notify("Medicamento removido da receita");
+    return;
+  }
+
+  requireId(numberOrNull(data.idReceita));
+  await api(`/api/receitas/${data.idReceita}/itens`, {
+    method: "POST",
+    body: JSON.stringify({
+      nome: data.nomeMedicamento,
+      principioAtivo: data.principioAtivo,
+      dosagem: data.dosagem,
+      frequencia: data.frequencia,
+      duracaoDias: Number(data.duracaoDias)
+    })
+  });
+  notify("Medicamento adicionado à receita");
 }
 
 async function submitCrud(resource, action, payload) {
@@ -442,7 +469,7 @@ function receitaCard(receita) {
   const itens = receita.itens && receita.itens.length
     ? receita.itens.map((item) => `
       <li>
-        <strong>${escapeHtml(item.nome || "-")}</strong>
+        <strong>${escapeHtml(item.nome || "-")} <small style="font-weight:normal;color:#61727d">#${item.id}</small></strong>
         <span>${escapeHtml(item.principioAtivo || "-")} | ${escapeHtml(item.dosagem || "-")} | ${escapeHtml(item.frequencia || "-")} | ${escapeHtml(String(item.duracaoDias || "-"))} dias</span>
       </li>
     `).join("")
